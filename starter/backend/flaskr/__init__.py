@@ -83,13 +83,6 @@ def create_app(test_config=None):
 
         # gets questions for given page
         current_questions = paginate_questions(request, questions_list)
-        # page = request.args.get('page', 1, type=int)
-        # start = (page - 1) * QUESTIONS_PER_PAGE
-        # end = start + QUESTIONS_PER_PAGE
-        # formatted_questions = [question.format()
-        #                        for question in questions_list]
-        # # questions for given page
-        # current_questions = formatted_questions[start:end]
 
         # if no questions for given page - abort
         if len(current_questions) == 0:
