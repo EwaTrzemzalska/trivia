@@ -126,6 +126,17 @@ def create_app(test_config=None):
             abort(422)
 
 
+#     '''
+#   @TODO:
+#   Create an endpoint to POST a new question,
+#   which will require the question and answer text,
+#   category, and difficulty score.
+
+#   TODO: TEST: When you submit a question on the "Add" tab,
+#   the form will clear and the question will appear at the end of the last page
+#   of the questions list in the "List" tab.
+#   '''
+
     @app.route('/questions', methods=['POST'])
     def create_question():
         body = request.get_json()
@@ -153,17 +164,16 @@ def create_app(test_config=None):
 
 # INSERT INTO questions (question, answer, difficulty, category) VALUES ('is this cat?', 'yes', '2', '1');
 
-#     '''
-#   @TODO:
-#   Create an endpoint to POST a new question,
-#   which will require the question and answer text,
-#   category, and difficulty score.
+    @app.route('/questions/search', methods=['POST'])
+    def search_question():
+        print("dupa")
+        search_term = request.json.get('searchTerm')
+        results = Question.query.filter(Question.question.ilike(f'%{search_term}%')).all()
 
-#   TODO: TEST: When you submit a question on the "Add" tab,
-#   the form will clear and the question will appear at the end of the last page
-#   of the questions list in the "List" tab.
-#   '''
-
+        return jsonify({
+            'success': True
+            # 'questions': results
+        })
 #     '''
 #   @TODO:
 #   Create a POST endpoint to get questions based on a search term.
