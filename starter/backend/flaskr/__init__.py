@@ -126,6 +126,28 @@ def create_app(test_config=None):
             abort(422)
 
 
+    @app.route('/questions', methods=['POST'])
+    def create_question():
+        body = request.get_json()
+        created_question = body.get('question')
+        created_answer = body.get('answer')
+        created_difficulty = body.get('difficulty')
+        created_category = body.get('category')
+
+        try:
+            question = Question(question=created_question, answer=created_answer, difficulty=created_difficulty, category=created_category)
+            question.insert()
+            selection = Question.query.order_by(Question.id).all()
+            current_questions = paginate_questions(request, selection)
+            return jsonify({
+                'success': True,
+                'created': question.id,
+                'questions': current_questions,
+                'total_questions': len(selection)
+            })
+        except:
+            abort(422)
+
     return app
 
 
