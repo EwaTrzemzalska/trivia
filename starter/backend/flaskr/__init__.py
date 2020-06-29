@@ -160,34 +160,36 @@ def create_app(test_config=None):
         except:
             abort(422)
 
-    @app.route('/questions/search', methods=['POST'])
-    def search_question():
-        print("dupa")
-        search_term = request.json.get('searchTerm')
-        results = Question.query.filter(Question.question.ilike(f'%{search_term}%')).all()
-        # results=Question.query.filter(Question.question.ilike('%{}%'.format(data['searchTerm']))).all()
-
-        return jsonify({
-            'success': True,
-            'questions': results
-        })
-
-    return app
-
-
-# INSERT INTO questions (question, answer, difficulty, category) VALUES ('is this cat?', 'yes', '2', '1');
-
-    
-#     '''
+    #     '''
 #   @TODO:
 #   Create a POST endpoint to get questions based on a search term.
 #   It should return any questions for whom the search term
 #   is a substring of the question.
 
-#   TEST: Search by any phrase. The questions list will update to include
+#   TODO: TEST: Search by any phrase. The questions list will update to include
 #   only question that include that string within their question.
 #   Try using the word "title" to start.
 #   '''
+
+    @app.route('/questions/search', methods=['POST'])
+    def search_question():
+        try:
+            data = request.get_json()
+            search_term = data.get('searchTerm')
+            questions = Question.query.filter(
+                Question.question.ilike('%{}%'.format(search_term))).all()
+            paginated_questions = paginate_questions(request, questions)
+
+            return jsonify({
+                'success': True,
+                'questions': paginated_questions,
+                'total_questions':  len(paginated_questions)
+            })
+        except:
+            abort(422)
+
+    return app
+
 
 #     '''
 #   @TODO:
