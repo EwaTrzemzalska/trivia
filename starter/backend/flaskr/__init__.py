@@ -8,6 +8,17 @@ from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10
 
+def paginate_questions(request, selection):
+  page = request.args.get('page', 1, type=int)
+  start =  (page - 1) * QUESTIONS_PER_PAGE
+  end = start + QUESTIONS_PER_PAGE
+
+  formatted_questions = [question.format() for question in selection]
+  # questions for given page
+  current_questions = formatted_questions[start:end]
+
+  return current_questions
+
 
 def create_app(test_config=None):
     # create and configure the app
@@ -69,13 +80,16 @@ def create_app(test_config=None):
     # handle GET request for questions
     def get_questions():
         questions_list = Question.query.all()
-        page = request.args.get('page', 1, type=int)
-        start = (page - 1) * QUESTIONS_PER_PAGE
-        end = start + QUESTIONS_PER_PAGE
-        formatted_questions = [question.format()
-                               for question in questions_list]
-        # questions for given page
-        current_questions = formatted_questions[start:end]
+
+        # gets questions for given page
+        current_questions = paginate_questions(request, questions_list)
+        # page = request.args.get('page', 1, type=int)
+        # start = (page - 1) * QUESTIONS_PER_PAGE
+        # end = start + QUESTIONS_PER_PAGE
+        # formatted_questions = [question.format()
+        #                        for question in questions_list]
+        # # questions for given page
+        # current_questions = formatted_questions[start:end]
 
         # if no questions for given page - abort
         if len(current_questions) == 0:
@@ -89,11 +103,20 @@ def create_app(test_config=None):
         return jsonify({
             'success': True,
             'questions': current_questions,
-            'total_questions': len(formatted_questions),
+            'total_questions': len(questions_list),
             'categories': categories_dict
         })
 
+#     '''
+#   @TODO:
+#   Create an endpoint to DELETE question using a question ID.
+
+#   TODO: TEST: When you click the trash icon next to a question, the question will be removed.
+#   This removal will persist in the database and when you refresh the page.
+#   '''
+
     @app.route('/questions/<int:question_id>', methods=['DELETE'])
+    # handle DELETE method for given question id
     def delete_question(question_id):
         try:
             question = Question.query.filter(
@@ -109,17 +132,11 @@ def create_app(test_config=None):
         except:
             abort(422)
 
+
     return app
 
 
-
-#     '''
-#   @TODO:
-#   Create an endpoint to DELETE question using a question ID.
-
-#   TEST: When you click the trash icon next to a question, the question will be removed.
-#   This removal will persist in the database and when you refresh the page.
-#   '''
+# INSERT INTO questions (question, answer, difficulty, category) VALUES ('is this cat?', 'yes', '2', '1');
 
 #     '''
 #   @TODO:
@@ -127,7 +144,7 @@ def create_app(test_config=None):
 #   which will require the question and answer text,
 #   category, and difficulty score.
 
-#   TEST: When you submit a question on the "Add" tab,
+#   TODO: TEST: When you submit a question on the "Add" tab,
 #   the form will clear and the question will appear at the end of the last page
 #   of the questions list in the "List" tab.
 #   '''
