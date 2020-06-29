@@ -8,9 +8,10 @@ from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10
 
+
 def paginate_questions(request, selection):
   page = request.args.get('page', 1, type=int)
-  start =  (page - 1) * QUESTIONS_PER_PAGE
+  start = (page - 1) * QUESTIONS_PER_PAGE
   end = start + QUESTIONS_PER_PAGE
 
   formatted_questions = [question.format() for question in selection]
@@ -159,21 +160,24 @@ def create_app(test_config=None):
         except:
             abort(422)
 
-    return app
-
-
-# INSERT INTO questions (question, answer, difficulty, category) VALUES ('is this cat?', 'yes', '2', '1');
-
     @app.route('/questions/search', methods=['POST'])
     def search_question():
         print("dupa")
         search_term = request.json.get('searchTerm')
         results = Question.query.filter(Question.question.ilike(f'%{search_term}%')).all()
+        # results=Question.query.filter(Question.question.ilike('%{}%'.format(data['searchTerm']))).all()
 
         return jsonify({
-            'success': True
-            # 'questions': results
+            'success': True,
+            'questions': results
         })
+
+    return app
+
+
+# INSERT INTO questions (question, answer, difficulty, category) VALUES ('is this cat?', 'yes', '2', '1');
+
+    
 #     '''
 #   @TODO:
 #   Create a POST endpoint to get questions based on a search term.
