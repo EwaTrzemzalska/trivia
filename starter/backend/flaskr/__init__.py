@@ -183,7 +183,7 @@ def create_app(test_config=None):
             return jsonify({
                 'success': True,
                 'questions': paginated_questions,
-                'total_questions':  len(paginated_questions)
+                'total_questions':  len(questions)
             })
         except:
             abort(422)
