@@ -10,15 +10,15 @@ QUESTIONS_PER_PAGE = 10
 
 
 def paginate_questions(request, selection):
-  page = request.args.get('page', 1, type=int)
-  start = (page - 1) * QUESTIONS_PER_PAGE
-  end = start + QUESTIONS_PER_PAGE
+    page = request.args.get('page', 1, type=int)
+    start = (page - 1) * QUESTIONS_PER_PAGE
+    end = start + QUESTIONS_PER_PAGE
 
-  formatted_questions = [question.format() for question in selection]
-  # questions for given page
-  current_questions = formatted_questions[start:end]
+    formatted_questions = [question.format() for question in selection]
+    # questions for given page
+    current_questions = formatted_questions[start:end]
 
-  return current_questions
+    return current_questions
 
 
 def create_app(test_config=None):
@@ -147,7 +147,8 @@ def create_app(test_config=None):
         created_category = body.get('category')
 
         try:
-            question = Question(question=created_question, answer=created_answer, difficulty=created_difficulty, category=created_category)
+            question = Question(question=created_question, answer=created_answer,
+                                difficulty=created_difficulty, category=created_category)
             question.insert()
             selection = Question.query.order_by(Question.id).all()
             current_questions = paginate_questions(request, selection)
@@ -200,12 +201,14 @@ def create_app(test_config=None):
 
     @app.route('/categories/<int:category_id>/questions')
     def get_questions_by_category(category_id):
-        category = Category.query.filter(Category.id == category_id).one_or_none()
+        category = Category.query.filter(
+            Category.id == category_id).one_or_none()
 
         if category == None:
             abort(404)
 
-        questions = Question.query.filter(Question.category == category.id).all()
+        questions = Question.query.filter(
+            Question.category == category.id).all()
         paginated_questions = paginate_questions(request, questions)
 
         return jsonify({
@@ -215,7 +218,53 @@ def create_app(test_config=None):
             'total_questions': len(questions)
         })
 
-    #'''
+
+    #  '''
+#   @TODO:
+#   Create a POST endpoint to get questions to play the quiz.
+#   This endpoint should take category and previous question parameters
+#   and return a random questions within the given category,
+#   if provided, and that is not one of the previous questions.
+
+#   TEST: In the "Play" tab, after a user selects "All" or a category,
+#   one question at a time is displayed, the user is allowed to answer
+#   and shown whether they were correct or not.
+#   '''
+    @app.route('/quizzes', methods=['POST'])
+    def play_quiz():
+        data = request.get_json()
+        previous_questions = data.get('previous_questions', None)
+        quiz_category = data.get('quiz_category', None)
+
+        if ((quiz_category is None) or (previous_questions is None)):
+            abort(400)
+
+        if quiz_category['id'] == 0:
+            questions = Question.query.all()
+        else:
+            questions = Question.query.filter_by(category=quiz_category['id']).all()
+
+        if not questions:
+            return abort(422)
+
+        selected = []
+
+        for question in questions:
+            if question.id not in previous_questions:
+                selected.append(question.format())
+
+        if len(selected) != 0:
+            result = random.choice(selected)
+            return jsonify({
+                'question': result
+            })
+        else:
+            return jsonify({
+                'question': False
+            })
+    
+
+    # '''
 #   @TODO:
 #   Create error handlers for all expected errors
 #   including 404 and 422.
@@ -253,20 +302,6 @@ def create_app(test_config=None):
             'message': 'unprocessable'
         }), 422
 
-
-
     return app
-
-#     '''
-#   @TODO:
-#   Create a POST endpoint to get questions to play the quiz.
-#   This endpoint should take category and previous question parameters
-#   and return a random questions within the given category,
-#   if provided, and that is not one of the previous questions.
-
-#   TEST: In the "Play" tab, after a user selects "All" or a category,
-#   one question at a time is displayed, the user is allowed to answer
-#   and shown whether they were correct or not.
-#   '''
 
 
