@@ -81,10 +81,7 @@ GET '/categories'
 - Request Arguments: None
 - Returns: An object with a single key, categories, that contains a object of id: category_string key:value pairs and 'success' True
 - Sample curl:
-```
 curl http://127.0.0.1:5000/categories
-```
-```
 {
   "categories": {
     "1": "Science", 
@@ -96,14 +93,12 @@ curl http://127.0.0.1:5000/categories
   }, 
   "success": true
 }
-```
 
 GET '/questions' or '/questions?page=2'
 - Fetches a dictionary of questions
 - Request Arguments: page
 - Returns: An object with 'success' True, paginated (10 questions per page) questions dictionary, number of all questions and dictionary with categories
 - Sample curl: curl http://127.0.0.1:5000/questions\?page\=2
-```
 {
   "categories": {
     "1": "Science",
@@ -188,33 +183,25 @@ GET '/questions' or '/questions?page=2'
   "success": true,
   "total_questions": 39
 }
-```
 
 DELETE '/questions/<int:question_id>'
 - Delete given by 'int:question_id' question
 - Request arguments: question_id
 - Returns: object with 'success' True and id of deleted question
 - Sample curl: 
-```
 curl -X DELETE http://127.0.0.1:5000/questions/38
-```
-```
 {
   "deleted": 38,
   "success": true
 }
-```
 
 POST '/questions'
 - Add question to the database
 - Request arguments: question, answer, difficulty, category
 - Returns: object with 'success' True, id of created question, questions for current page and number of all questions
 - Sample curl: 
-```
 curl -X POST  -H "Content-Type: application/json" http://127.0.0.1:5000/questions -d '{ "question": "Who was the director of \"Pulp Fiction\"?", "answer": "Quentin Tarantino", "difficulty": 1, "category": "5" }'
-```
 
-```
 {
   "created": 49,
   "questions": [
@@ -292,18 +279,14 @@ curl -X POST  -H "Content-Type: application/json" http://127.0.0.1:5000/question
   "success": true,
   "total_questions": 39
 }
-```
 
 POST '/questions/search'
 - Search for the given search term in all questions, case insensitive
 - Request Arguments: search_term
 - Returns: Object with 'success' True, questions with the given search term - paginated, number of all searched questions
 - Sample curl: 
-```
 curl -X POST -H "Content-Type:application/json" -d '{"searchTerm":"who"}' http://127.0.0.1:5000/questions/search
-```
 
-```
 {
   "questions": [
     {
@@ -338,18 +321,14 @@ curl -X POST -H "Content-Type:application/json" -d '{"searchTerm":"who"}' http:/
   "success": true,
   "total_questions": 4
 }
-```
 
 GET '/categories/<int:category_id>/questions'
 - Fetches dictionary of questions for given category id
 - Request Arguments: category_id
 - Returns: Object with 'success' True, questions for given category, current category name, number of total questions in this category
 - Sample curl:
-```
 curl http://127.0.0.1:5000/categories/2/questions
-```
 
-```
 {
   "current_category": "Art",
   "questions": [
@@ -385,18 +364,14 @@ curl http://127.0.0.1:5000/categories/2/questions
   "success": true,
   "total_questions": 4
 }
-```
 
 POST '/quizzes'
 - Allow user to play quiz
 - Request Arguments: previous_questions, quiz_category
 - Returns: Object with 'success' True and next question
 - Sample curl:
-```
 curl http://127.0.0.1:5000/quizzes -X POST -H "Content-Type: application/json" -d '{"previous_questions": [5, 9], "quiz_category": {"type": "History", "id": "4"}}'
-```
 
-```
 {
   "question": {
     "answer": "George Washington Carver",
@@ -407,41 +382,32 @@ curl http://127.0.0.1:5000/quizzes -X POST -H "Content-Type: application/json" -
   },
   "success": true
 }
-```
 
 Error Handlers:
 - 400 
-```
 {
   'success': False,
   'error': 400,
   'message': 'bad request'
 }
-```
 - 404
-```
 {
   'success': False,
   'error': 404,
   'message': 'resource not found'
 }
-```
 - 405
-```
 {
   'success': False,
   'error': 405,
   'message': 'method not allowed'
 }
-```
 - 422
-```
 {
   'success': False,
   'error': 422,
   'message': 'unprocessable'
 }
-```
 
 ```
 
