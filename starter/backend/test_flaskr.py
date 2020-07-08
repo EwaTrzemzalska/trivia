@@ -19,11 +19,11 @@ class TriviaTestCase(unittest.TestCase):
         setup_db(self.app, self.database_path)
 
 
-        self.sample_question = {
-            'question': 'Who invented Peanut Butter?',
-            'answer': 'George Washington Carver',
+        self.new_question = {
+            'question': 'Who invented first modern chocolate bar?',
+            'answer': 'Joseph Fry',
             'category': 4,
-            'difficulty': 2
+            'difficulty': 4
         }
 
         # binds the app to the current context
@@ -42,44 +42,138 @@ class TriviaTestCase(unittest.TestCase):
     Write at least one test for each test for successful operation and for expected errors.
     """
 
-    # 1. test for ('/categories') -> return jsonify({
-        #     'success': True,
-        #     'categories': categories_dict
-        # })
-    # 2. test for ('/questions) -> return jsonify({
-        #     'success': True,
-        #     'questions': current_questions,
-        #     'total_questions': len(questions_list),
-        #     'categories': categories_dict
-        # })
+    def test_get_categories(self):
+        res = self.client().get('/categories')
+        data = json.loads(res.data)
 
-    # 3. test for ('/questions/<int:question_id>' DELETE) -> return jsonify({
-            #     'success': True,
-            #     'deleted': question_id
-            # })
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['categories'])
+        
 
-    # 4. ('/questions', methods=['POST']) -> return jsonify({
-            #     'success': True,
-            #     'created': question.id,
-            #     'questions': current_questions,
-            #     'total_questions': len(selection)
-            # })
-    # 5. ('/questions/search', methods=['POST']) ->  return jsonify({
-            #     'success': True,
-            #     'questions': paginated_questions,
-            #     'total_questions':  len(questions)
-            # })
+    def test_get_paginated_questions(self):
+        res = self.client().get('/questions')
+        data = json.loads(res.data)
 
-    # 6. ('/categories/<int:category_id>/questions') -> return jsonify({
-        #     'success': True,
-        #     'questions': paginated_questions,
-        #     'current_category': category.type,
-        #     'total_questions': len(questions)
-        # })
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['total_questions'])
+        self.assertTrue(len(data['questions']))
+        self.assertTrue(len(data['categories']))
 
-    # 7. '/quizzes', methods=['POST']) -> return jsonify({
-            #     'question': result
-            # })
+    def test_404_sent_requesting_beyond_valid_page(self):
+
+        res = self.client().get('/questions?page=100')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'resource not found')
+
+    def test_delete_question(self):
+        res = self.client().delete('/questions/19')
+        data = json.loads(res.data)
+
+        question = Question.query.filter(Question.id == 19).one_or_none()
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['deleted'], 19)
+        self.assertEqual(question, None)
+
+    def test_422_if_question_does_not_exist(self):
+        res = self.client().delete('/questions/2000')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 422)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'unprocessable')
+
+    def test_create_new_question(self):
+        res = self.client().post('/questions', json=self.new_question)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['created'])
+        self.assertTrue(len(data['questions']))
+        self.assertTrue(data['total_questions'])
+
+    def test_405_if_question_creation_not_allowed(self):
+        res = self.client().post('/questions/45', json=self.new_question)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 405)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'method not allowed')
+
+    def test_search_questions(self):
+        request_data = {'searchTerm':'who'}
+        res = self.client().post('/questions/search', data=json.dumps(request_data))
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        # self.assertTrue(len(data['questions']))
+        self.assertTrue(data['total_questions'])
+
+    def test_search_questions(self):
+        res = self.client().post('/questions/search', json={'searchTerm': 'hematology'})
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['total_questions'], 1)
+        self.assertEqual(data['questions'][0]['id'], 22)
+
+    def test_when_search_questions_result_is_empty(self):
+        res = self.client().post('/questions/search', json={'searchTerm': 'qwertyuiop'})
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['total_questions'], 0)
+
+    def test_get_questions_by_category(self):
+        res = self.client().get('/categories/1/questions')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['current_category'], 'Science')
+        self.assertTrue(len(data['questions']))
+        self.assertTrue(data['total_questions'])
+
+    def test_404_when_category_not_exists(self):
+        res = self.client().get('/categories/100/questions')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'resource not found')
+        
+    def test_play_quiz(self):
+        res = self.client().post('/quizzes', json={'previous_questions': [2, 4],
+                                            'quiz_category': {'type': 'Science', 'id': '1'}})
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['question'])
+        self.assertEqual(data['question']['category'], 1)
+
+        # check if next question is not any of previous questions
+        self.assertNotEqual(data['question']['id'], 2)
+        self.assertNotEqual(data['question']['id'], 4)
+
+    def test_400_play_quiz_fails(self):
+        response = self.client().post('/quizzes', json={})
+        data = json.loads(response.data)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'bad request')
+
 
 # Make the tests conveniently executable
 if __name__ == "__main__":
