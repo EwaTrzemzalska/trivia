@@ -37,7 +37,6 @@ def create_app(test_config=None):
                              'GET, PATCH, POST, DELETE, OPTIONS')
         return response
 
-
     @app.route('/categories')
     # handle GET request for all available categories
     def get_categories():
@@ -50,7 +49,6 @@ def create_app(test_config=None):
             'success': True,
             'categories': categories_dict
         })
-
 
     @app.route('/questions')
     # handle GET request for questions
@@ -76,7 +74,6 @@ def create_app(test_config=None):
             'categories': categories_dict
         })
 
-
     @app.route('/questions/<int:question_id>', methods=['DELETE'])
     # handle DELETE method for given question id
     def delete_question(question_id):
@@ -93,7 +90,6 @@ def create_app(test_config=None):
             })
         except:
             abort(422)
-
 
     @app.route('/questions', methods=['POST'])
     def create_question():
@@ -118,7 +114,6 @@ def create_app(test_config=None):
         except:
             abort(422)
 
-
     @app.route('/questions/search', methods=['POST'])
     def search_question():
         try:
@@ -136,13 +131,12 @@ def create_app(test_config=None):
         except:
             abort(422)
 
-
     @app.route('/categories/<int:category_id>/questions')
     def get_questions_by_category(category_id):
         category = Category.query.filter(
             Category.id == category_id).one_or_none()
 
-        if category == None:
+        if category is None:
             abort(404)
 
         questions = Question.query.filter(
@@ -156,7 +150,6 @@ def create_app(test_config=None):
             'total_questions': len(questions)
         })
 
-
     @app.route('/quizzes', methods=['POST'])
     def play_quiz():
         data = request.get_json()
@@ -169,7 +162,8 @@ def create_app(test_config=None):
         if quiz_category['id'] == 0:
             questions = Question.query.all()
         else:
-            questions = Question.query.filter_by(category=quiz_category['id']).all()
+            questions = Question.query.filter_by(
+                category=quiz_category['id']).all()
 
         if not questions:
             return abort(422)
@@ -191,7 +185,6 @@ def create_app(test_config=None):
                 'success': False,
                 'question': False
             })
-    
 
     @app.errorhandler(400)
     def bad_request(error):
@@ -226,5 +219,3 @@ def create_app(test_config=None):
         }), 422
 
     return app
-
-
