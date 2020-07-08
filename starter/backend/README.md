@@ -87,6 +87,7 @@ GET '/categories'
 - Sample curl:
 ```
 curl http://127.0.0.1:5000/categories
+
 {
   "categories": {
     "1": "Science", 
@@ -106,6 +107,7 @@ GET '/questions' or '/questions?page=2'
 - Sample curl: 
 ```
 curl http://127.0.0.1:5000/questions\?page\=2
+
 {
   "categories": {
     "1": "Science",
@@ -198,6 +200,7 @@ DELETE '/questions/<int:question_id>'
 - Sample curl: 
 ```
 curl -X DELETE http://127.0.0.1:5000/questions/38
+
 {
   "deleted": 38,
   "success": true
